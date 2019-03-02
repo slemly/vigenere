@@ -6,9 +6,11 @@ TARGET = vigenere
 USAGE0 = 'This vigenere cipher will encode a .txt file with a key of your choosing.'
 USAGE1 = "Usage: ./vigenere <action(r/w)>  <source file>  <cipher key>"
 TEST = ./vigenere w secret.txt asdf
+CLEAN = make clean
 
 test: execute
 	$(TEST)
+	$(CLEAN)
 execute: vigenere.o vigenere.h
 	$(CC) -o $(TARGET) $(OBJ)
 	@echo
@@ -18,6 +20,5 @@ execute: vigenere.o vigenere.h
 	@echo
 vigenere.o: vigenere.h
 	$(CC) -c $(SRC) 
-	
 clean: 
 	/bin/rm -r $(TARGET) $(OBJ) 
