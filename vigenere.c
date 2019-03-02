@@ -1,16 +1,16 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 #include "vigenere.h"
+#include <stdio.h>
 
 /**
  * my idea for this is to take arguments from command line and scramble a file with a given key, 
  * then unscramble that same file with the same key if a different action argument is passed.
  * 
- * Usage is in the makefile. Everything should compile now but I'm having some trouble down in the
+ * Usage is <make test>. Everything should compile now but I'm having some trouble down in the
  * cipher_with_key() function.
- * 
  * 
  * 90% of these print statements are just error checks, so remove/add at your lesiure.
  * 
@@ -31,6 +31,7 @@ int main(int argc, char* argv[]){
     char* message;
     FILE* file;
     int length;
+    char* encoded;
 
     if(argc == 4){
         //assign args to variables. 
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]){
         fseek (file, 0, SEEK_END);
         length = ftell (file);
         fseek (file, 0, SEEK_SET);
-        message = malloc (length);
+        message = malloc (length * 2);
 
         
         //I'm only using fgets() here because our test file is one line.
@@ -68,17 +69,17 @@ int main(int argc, char* argv[]){
             return -1;
         }else printf("Message : %s \n", message);//error check
 
-        char* encoded = cipher_with_key(message, key);//run cipher
+        encoded = cipher_with_key(message, key);//run cipher
         printf("Message: %s\n", encoded);
         char* temp = "encoded";
         char* encoded_filename = concat(temp, to_open);
-        printf("Filename : %s \n", encoded_filename);
-
-
+        printf(" \n \n \n Filename : %s \n", encoded_filename);
         //Here's where we write the encoded message to a new file.
         //FILE* source = fopen("encoded_" + to_open, "r");
-
-    }   
+        
+    }  
+    //free(encoded);
+    //free(message); 
     return 0;
 
 }
@@ -94,46 +95,42 @@ char* concat(char *s1, char *s2){
 
 char* cipher_with_key(char* message, char* key){
     printf("\nBeginning Cipher . . .\n \n");
-    char* encoded = (char*)malloc(sizeof(strlen(message)));
+    char* encoded = (char*)malloc(sizeof(strlen(message))+1);
     int k;
     char new_letter;
     for(int i = 0; i < strlen(message) ; i++){
 
         /*
-        There are hella bugs in this part. 
+        There are many bugs in this section. 
         I'm having trouble going from 
-        [char->ASCII->thru cipher algorithm->ASCII->char] and it fucks some shit up.
+        [char->ASCII->thru cipher algorithm->ASCII->char].
         */
+
         int x;
-        k = i;
+        k = i;if(key[i] == NULL){
+            printf("Wrapping key . . .\n");
+            k = i % strlen(key);
+        }
         printf("checking message index %d \n", i);
         if(isalpha(message[i]) == 0){ 
             printf("character \"%c\"  in message must be alphabetical\n", message[i]);
         }
-        
-        if(message[i] == NULL){
-            printf("Message index is null. breaking.\n");
-            break;
-        }
-        if(key[i] == NULL){
-            printf(" Attempting to wrap key\n");
-            k = i % strlen(key);
-        }
+    
         //combine key and message.
         if((int)message[i] != 32){
-            x = (((int)message[i] + (int)key[k])-65 % 26);
+            x = (int)message[i];
+            x = (((int)message[i] + (int)key[k]) % 128);
         }
-        printf("ASCII for iteration %d is %d \n", i, x);
-        //here is where our issue is: converting an int to an ASCII character.
-        //We could try to remain alphanumeric but could use all ASCII characters.
-        new_letter = (char)x;
-        printf("%c \n", message[i]);
-        encoded[i] = new_letter;
-        printf("encoded char : %c \n", encoded[i]);
+        /*
+        x = x + ((int)key[k]);
+        x = (x % 128) + 13;*/
 
-        //return if message is finished
+        new_letter = (char)x;
+        encoded[i] = new_letter;
+
+        //return if message is finished. Doing this up at the top results in seg faults.
         if(message[i+1] == NULL){
-            printf("Index %d is null. Returning.\n", i);
+            printf("Index %d is null. Returning.\n \n \n \n", i+1);
             return encoded;
         }
     }
