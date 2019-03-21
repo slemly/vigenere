@@ -1,20 +1,12 @@
 /*
-@author Samuel Lemly
 @version March 2019
-CS448
-
-
-All code aside from the concat() function was written by Sam Lemly 
 */
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
 #include "vigenere.h"
 #include <stdio.h>
-
 
 //FUNCTION PROTOTYPES
 char* cipher_with_key(char* message, char* key);
@@ -39,10 +31,10 @@ int main(int argc, char* argv[]){
         action = argv[1];
         to_open = argv[2];
         key = argv[3];
-    }
-    else if(argc != 4){
+    }else{
         print_usage();
     }
+    
     if(key == NULL){
         printf("No key given\n");
         print_usage();
@@ -93,6 +85,7 @@ int main(int argc, char* argv[]){
         char* encoded_filename = concat(temp, to_open);
         printf("\nFilename : %s \n", encoded_filename);
         FILE* coded_file = fopen(encoded_filename, "w");
+        printf("Decoded length: %d \n", (int)strlen(encoded));
         fprintf(coded_file, "%s", encoded);
         fclose(coded_file);
         free(encoded_filename);
@@ -155,8 +148,8 @@ char* uncipher(char* message, char* key){
         }else{
             x = 10;
         }   
-        new_letter = (char)x;
-        decoded[i] = new_letter;
+        decoded[i]=(char)x;
+        
         k++;    
         //return if message is finished. Doing this up at the top results in seg faults.
         if((int)message[i+1] == 0){
@@ -175,7 +168,7 @@ char* get_message(FILE* file){
     int i = 0;
     char* message =(char*)malloc(sizeof(char) * get_filesize(file));
     rewind(file);
-    while(fscanf(file, "%c", &message[i]) != EOF){
+    while(fscanf(file, "%c", (&message[i])) !=EOF ){ // removing the '&' seg faults
         i++;
     }
     return message;
@@ -184,17 +177,15 @@ char* get_message(FILE* file){
 int get_filesize(FILE* file){
     char* ch;
     int filelen;
-    while((ch=(char)fgetc(file)) != EOF){
+    while((int)(ch = (char)fgetc(file)) != (int) EOF){
         filelen ++;
     }
     return filelen;
 }
-
+// taken from https://bit.ly/2W435As , StackOverflow
 char* concat(char *s1, char *s2){
-    char *result = (char*)malloc(strlen(s1) + strlen(s2) + 1);
+    char *result = (char*)malloc(strlen(s1) + strlen(s2));
     strcpy(result, s1);
     strcat(result, s2);
     return result;
 }
-
-
